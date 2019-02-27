@@ -1,0 +1,8 @@
+---
+applications:
+- name: planespotter
+  memory: 512M
+  instances: 1
+  buildpack: python_buildpack
+  env:
+    PLANESPOTTER_API_ENDPOINT: planespotter-api.demo.yves.local
