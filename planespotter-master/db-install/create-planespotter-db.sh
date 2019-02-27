@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd planespotter/db-install/
+#cd planespotter/db-install/
 wget http://registry.faa.gov/database/ReleasableAircraft.zip
 unzip ReleasableAircraft.zip
 rm ReleasableAircraft.zip DEALER.txt DEREG.txt DOCINDEX.txt ENGINE.txt RESERVED.txt
