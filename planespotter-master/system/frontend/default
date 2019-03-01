@@ -1,0 +1,8 @@
+server {
+    listen 80;
+    server_name default;
+    location / {
+        include uwsgi_params;
+        uwsgi_pass unix:/planespotterCloud/planespotter-master/frontend/app/frontend.sock;
+    }
+}

@@ -1,0 +1,18 @@
+[Unit]
+Description=uWSGI instance to serve frontend
+After=network.target
+[Unit]
+Description=uWSGI instance to serve frontend
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/planespotterCloud/planespotter-master/frontend/app
+Environment="PATH=/planespotterCloud/planespotter-master/frontend/bin;PLANESPOTTER_API_ENDPOINT=planespotter-api"
+ExecStart=/local/usr/bin/uwsgi --ini frontend.ini
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
