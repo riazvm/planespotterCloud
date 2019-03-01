@@ -10,7 +10,7 @@ User=ubuntu
 Group=www-data
 WorkingDirectory=/planespotterCloud/planespotter-master/frontend/app
 Environment="PATH=/planespotterCloud/planespotter-master/frontend/bin;PLANESPOTTER_API_ENDPOINT=planespotter-api"
-ExecStart=/local/usr/bin/uwsgi --ini frontend.ini
+ExecStart=/usr/local/bin/uwsgi --ini frontend.ini
 Restart=always
 RestartSec=3
 
