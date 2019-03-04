@@ -3,15 +3,15 @@ Cloned from https://github.com/yfauser/planespotter
 
 # Provision Instances and depoloy the planespotter App on AWS using VMWare Cloud Assembly
 
-    - Create VPC with a public and private Subnet on a single AZ.  Deploys an Internet Gateway, with a default route on the public subnet. Deploy a NAT Gateways and default routes for it in the private subnets.
+- Create VPC with a public and private Subnet on a single AZ.  Deploys an Internet Gateway, with a default route on the public subnet. Deploy a NAT Gateways and default routes for it in the private subnets.
 
-    - Create and provision a front end server in the public subnet , an api server, a cache server and a mysql db server in the private subnet.
+- Create and provision a front end server in the public subnet , an api server, a cache server and a mysql db server in the private subnet.
 
-    - Manually create a windows bastion host on the public subnet to connect and validate the instances on the private subnet
+- Manually create a windows bastion host on the public subnet to connect and validate the instances on the private subnet
 
-    - Change IP addresses on the configuration file on the API  Server to point to the dbserver and cache server .
+- Change IP addresses on the configuration file on the API  Server to point to the dbserver and cache server .
 
-    - Chnage the IP address on the ini file on the frontend server to point to the API server.
+- Chnage the IP address on the ini file on the frontend server to point to the API server.
 
 
 ##  Create VPC
