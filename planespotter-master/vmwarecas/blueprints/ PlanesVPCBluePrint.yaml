@@ -4,6 +4,7 @@ resources:
   FrontEnd:
     type: Cloud.AWS.EC2.Instance
     properties:
+    # Front end compute
       name: frontend
       image: AWSUbuntu
       flavor: small
@@ -11,7 +12,7 @@ resources:
         authentication: keyPairName
         keyPair: mytestkeypair
       constraints:
-        - tag: bmwvpcpublic
+        - tag: planespublicsubnet
       networks:
         - name: '${resource.Cloud_Network_1.name}'
           assignPublicIpAddress: true
@@ -51,6 +52,7 @@ resources:
          - sudo systemctl restart nginx
          - ufw allow 'Nginx Full'
   APITier:
+    # API Server  compute
     type: Cloud.AWS.EC2.Instance
     properties:
       name: api
@@ -61,7 +63,7 @@ resources:
         authentication: keyPairName
         keyPair: mytestkeypair
       constraints:
-        - tag: bmwvpcprivate
+        - tag: planesprivatesubnet
       networks:
         - name: '${resource.Cloud_Network_2.name}'
       cloudConfig: |
@@ -101,6 +103,7 @@ resources:
   CacheTier:
     type: Cloud.AWS.EC2.Instance
     properties:
+      # Cache  compute
       name: cache
       image: AWSUbuntu
       flavor: small
@@ -109,7 +112,7 @@ resources:
         authentication: keyPairName
         keyPair: mytestkeypair
       constraints:
-        - tag: bmwvpcprivate
+        - tag: planesprivatesubnet
       networks:
         - name: '${resource.Cloud_Network_2.name}'
       cloudConfig: |
@@ -149,6 +152,7 @@ resources:
       constraints:
         - tag: bmwvpcpublic
   DatabaseTier:
+    # DB Server compute
     type: Cloud.AWS.EC2.Instance
     properties:
       name: DBTier
@@ -159,7 +163,7 @@ resources:
         authentication: keyPairName
         keyPair: mytestkeypair
       constraints:
-        - tag: bmwvpcprivate
+        - tag: planesprivatesubnet
       networks:
         - name: '${resource.Cloud_Network_2.name}'
       cloudConfig: |
