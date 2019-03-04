@@ -4,7 +4,7 @@ resources:
   FrontEnd:
     type: Cloud.AWS.EC2.Instance
     properties:
-    # Front end compute
+      # Front end compute
       name: frontend
       image: AWSUbuntu
       flavor: small
@@ -147,10 +147,10 @@ resources:
   Cloud_Network_1:
     type: Cloud.Network
     properties:
-      name: AWS-BMW-Network-EastRegion
+      name: PlanesNetworkProfile-Publuc
       networkType: existing
       constraints:
-        - tag: bmwvpcpublic
+        - tag: planespublicsubnet
   DatabaseTier:
     # DB Server compute
     type: Cloud.AWS.EC2.Instance
@@ -194,7 +194,7 @@ resources:
   Cloud_Network_2:
     type: Cloud.Network
     properties:
-      name: AWS-Private-BMW-Network
+      name: PlanesNetworkProfile-Private
       networkType: existing
       constraints:
-        - tag: bmwvpcprivate
+        - tag: planesprivatesubnet
