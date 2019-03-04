@@ -1,0 +1,196 @@
+formatVersion: 1
+inputs: {}
+resources:
+  FrontEnd:
+    type: Cloud.AWS.EC2.Instance
+    properties:
+      name: frontend
+      image: AWSUbuntu
+      flavor: small
+      remoteAccess:
+        authentication: keyPairName
+        keyPair: mytestkeypair
+      constraints:
+        - tag: bmwvpcpublic
+      networks:
+        - name: '${resource.Cloud_Network_1.name}'
+          assignPublicIpAddress: true
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+         
+        packages:
+         - nginx
+         - git
+         
+        runcmd:
+         - sudo apt-get update
+         - sudo apt-get install python-pip python-dev nginx git --assume-yes
+         - sudo pip install --upgrade pip
+         - sudo pip install virtualenv
+         - sudo git clone https://github.com/riazvm/planespotterCloud.git
+         - cd /planespotterCloud/planespotter-master/
+         - sudo chmod 777 *
+         - sudo cp /planespotterCloud/planespotter-master/system/frontend/frontend.service /etc/systemd/system/frontend.service
+         - sudo chmod 777 /etc/systemd/system/frontend.service
+         - sudo cp /planespotterCloud/planespotter-master/system/frontend/default /etc/nginx/sites-enabled/default
+         - sudo virtualenv frontend
+         - cd frontend/
+         - sudo chmod 777 *
+         - source bin/activate
+         - cd app
+         - sudo chmod 777 *
+         - sudo pip install -r requirements.txt
+         - sudo pip install uwsgi
+         - sudo -H bash
+         - mkdir -p /var/log/uwsgi
+         - chown -R ubuntu:ubuntu /var/log/uwsgi
+         - sudo systemctl start frontend
+         - sudo systemctl enable frontend
+         - sudo systemctl restart nginx
+         - ufw allow 'Nginx Full'
+  APITier:
+    type: Cloud.AWS.EC2.Instance
+    properties:
+      name: api
+      image: AWSUbuntu
+      flavor: small
+      address: 10.192.20.190
+      remoteAccess:
+        authentication: keyPairName
+        keyPair: mytestkeypair
+      constraints:
+        - tag: bmwvpcprivate
+      networks:
+        - name: '${resource.Cloud_Network_2.name}'
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+
+        packages:
+         - nginx
+         - git
+
+        runcmd:
+         - sudo apt-get update
+         - sudo apt-get install python-pip python-dev nginx git --assume-yes
+         - sudo pip install --upgrade pip
+         - sudo pip install virtualenv
+         - sudo git clone https://github.com/riazvm/planespotterCloud.git
+         - cd /planespotterCloud/planespotter-master/
+         - sudo chmod 777 *
+         - sudo cp /planespotterCloud/planespotter-master/system/api/app-server.service /etc/systemd/system/app-server.service
+         - sudo chmod 777 /etc/systemd/system/app-server.service
+         - sudo cp /planespotterCloud/planespotter-master/system/api/default /etc/nginx/sites-enabled/default
+         - sudo virtualenv app-server
+         - cd app-server/
+         - sudo chmod 777 *
+         - source bin/activate
+         - cd app
+         - sudo chmod 777 *
+         - sudo pip install uwsgi Flask-Restless PyMySQL Flask-SQLAlchemy requests redis
+         - sudo -H bash
+         - mkdir -p /var/log/uwsgi
+         - chown -R ubuntu:ubuntu /var/log/uwsgi
+         - sudo systemctl start app-server
+         - sudo systemctl enable app-server
+         - sudo systemctl restart nginx
+         - ufw allow 'Nginx Full'
+  CacheTier:
+    type: Cloud.AWS.EC2.Instance
+    properties:
+      name: cache
+      image: AWSUbuntu
+      flavor: small
+      address: 10.192.20.191
+      remoteAccess:
+        authentication: keyPairName
+        keyPair: mytestkeypair
+      constraints:
+        - tag: bmwvpcprivate
+      networks:
+        - name: '${resource.Cloud_Network_2.name}'
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+         
+        packages:
+         - git
+         
+        runcmd:
+         - sudo apt-get update
+         - sudo apt-get install git build-essential tcl --assume-yes
+         - sudo git clone https://github.com/riazvm/planespotterCloud.git
+         - cd /tmp
+         - sudo curl -O http://download.redis.io/redis-stable.tar.gz
+         - sudo tar xzvf redis-stable.tar.gz
+         - cd redis-stable
+         - sudo make
+         - sudo make test
+         - sudo make install
+         - sudo mkdir /etc/redis
+         - sudo cp /planespotterCloud/planespotter-master/system/cache/redis.conf /etc/redis
+         - sudo cp /planespotterCloud/planespotter-master/system/cache/redis.service /etc/systemd/system/redis.service
+         - sudo chmod 777 /etc/systemd/system/redis.service
+         - sudo -H bash
+         - sudo adduser --system --group --no-create-home redis
+         - mkdir /var/lib/redis
+         - chown redis:redis /var/lib/redis
+         - chmod 770 /var/lib/redis
+         - sudo systemctl start redis
+  Cloud_Network_1:
+    type: Cloud.Network
+    properties:
+      name: AWS-BMW-Network-EastRegion
+      networkType: existing
+      constraints:
+        - tag: bmwvpcpublic
+  DatabaseTier:
+    type: Cloud.AWS.EC2.Instance
+    properties:
+      name: DBTier
+      image: AmazonLinuxAMI
+      flavor: small
+      address: 10.192.20.192
+      remoteAccess:
+        authentication: keyPairName
+        keyPair: mytestkeypair
+      constraints:
+        - tag: bmwvpcprivate
+      networks:
+        - name: '${resource.Cloud_Network_2.name}'
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+
+        repo_update: true
+        repo_upgrade: all
+
+        packages:
+         - mysql-server
+         - git
+
+        runcmd:
+         - yum -y install git
+         - sudo /etc/init.d/mysqld start
+         - sudo git clone https://github.com/riazvm/planespotterCloud.git
+         - cd /planespotterCloud/planespotter-master/
+         - sudo chmod 777 *
+         - cd /planespotterCloud/planespotter-master/db-install/
+         - sudo chmod 777 *
+         - sudo chmod +x *
+         - export MYSQL_ROOT_PASSWORD=
+         - wget http://registry.faa.gov/database/ReleasableAircraft.zip
+         - unzip ReleasableAircraft.zip
+         - mysql --user=root --password=$MYSQL_ROOT_PASSWORD < create-planespotter-db.sql
+  Cloud_Network_2:
+    type: Cloud.Network
+    properties:
+      name: AWS-Private-BMW-Network
+      networkType: existing
+      constraints:
+        - tag: bmwvpcprivate
