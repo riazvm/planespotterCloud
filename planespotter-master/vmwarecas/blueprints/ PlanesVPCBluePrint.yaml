@@ -10,7 +10,7 @@ resources:
       flavor: small
       remoteAccess:
         authentication: keyPairName
-        keyPair: mytestkeypair
+        keyPair: planeskeypair
       constraints:
         - tag: planespublicsubnet
       networks:
@@ -61,7 +61,7 @@ resources:
       address: 10.192.20.190
       remoteAccess:
         authentication: keyPairName
-        keyPair: mytestkeypair
+        keyPair: planeskeypair
       constraints:
         - tag: planesprivatesubnet
       networks:
@@ -110,7 +110,7 @@ resources:
       address: 10.192.20.191
       remoteAccess:
         authentication: keyPairName
-        keyPair: mytestkeypair
+        keyPair: planeskeypair
       constraints:
         - tag: planesprivatesubnet
       networks:
@@ -161,7 +161,7 @@ resources:
       address: 10.192.20.192
       remoteAccess:
         authentication: keyPairName
-        keyPair: mytestkeypair
+        keyPair: planeskeypair
       constraints:
         - tag: planesprivatesubnet
       networks:
