@@ -131,6 +131,7 @@ NOTE: These tags are used to provision the compute intances to their respective 
 ### EC2 Instances
 - Go to the EC2 dashboard . Log into AWS , serach for EC2 under services
 - You should see four new EC2 instances running in your dashboard
+- Under the EC2 Dashboard click on Security Groups. CAS would have created the photon-model-sg security group.
 - Click on the API, DB and Cache instances and make sure their subnet is the private subnet of your vpc
 - make sure that the frontend instance is on the public subnet of your vpc
 - Get private IP of all instances
