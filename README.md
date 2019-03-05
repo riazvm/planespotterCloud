@@ -14,7 +14,7 @@ Cloned from https://github.com/yfauser/planespotter
 - Chnage the IP address on the ini file on the frontend server to point to the API server.
 
 ##  Application Architecture
-https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/AWSVpcPlanespotter.png
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/AWSVpcPlanespotter.png)
 
 ##  Create VPC
 
