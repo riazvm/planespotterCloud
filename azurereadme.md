@@ -81,36 +81,46 @@ Cloned from https://github.com/yfauser/planespotter
 
 
 
-### Create a Key Pair
-- Click on services and Search for EC2 and select EC2
-- On the left menu under Network and Security select KeyPairs
-- Click on KeyPairs and enter name as planeskeypair
-- A planeskeypair.pem file is generated. Store this file in a safe location do not loose this file.
+### Create a Application in Azure
+- Login to the azureportal (portal.azure.com)
+- Navigate to Azure Active Directory  App Registrations (Preview)
+	+ New Registrations 
+- Enter A Name planeSpotterCAS
 
+##### Supported AccountTypes
+- Select Accounts in any organizational directory and personal Microsoft accounts (e.g. Skype, Xbox, Outlook.com)
+- Select Dropdown as Public Client
+- Redirect URL : urn:ietf:wg:oauth:2.0:oob
+- Click on register
 
-###### NOTE: You can only access the compute instances in the private subnet from the public subnet
+##### Certificate and Secrets
+- Select Certificate and Secrets
+- Click on +New client secret
+- Description  “plane spotter app key”
+- Expires as Never
+- Click on Add
+- Copy the value to a clip board (This is the client Secret)
 
-### Provision a Bastion Host
-- Click on services and Search for EC2.
-- Launch an instance, select a windows machine which is free tier eligible (Eg. Microsoft Windows Server 2019 Base - ami-0410d3d3bd6d555f4)
-- Select Instance Type as t2 micro (Free tier eligible) and click on configure instances
-- Select Network as vpc -xxx | Dev
-- Select subnet as Dev Public 
-- Click on Add Storage, and Click on Tags (Key Name , Value Bastion Host)
-- Configure Security Group , create new , give the security group a name, by default RDP should be enabled
-- Click Review and launch, Select existing keypair (planeskeypair)
-- Acknowledge and launch the instance
+##### Important ID's
+- Client Secret - Copy the value from above clip board
+- Go to overview and select the Application(Client) ID and Directory(tenant) ID to a clipboard
+- Click on All services in the left hand menu
+- Under General click on Subscriptions 
+- Select Subscription that you are using
 
+##### Assign Role to App 
+- Click on AccessControl(IAM)
+- Click on Add a Role Assignment
+- Select Role as Contributor
+- Under Select search for the app you had created Eg. planeSpotterCAS
+- Select the app and click on Save
 
-### Delete AWS Stack
+### Delete Azure Stack
 
-- Terminate all instances running in the VPC
-- Search for CloudFormation under services
-- Select the Stack that was created (Eg. mycasoneazstack) 
-- Click on Actions Delete Stack
-
- 
-
+- Login to Azure portal (portal.azure.com)
+- Click on Resource Groups
+- Select the resource group (Eg CASResourceGroup)
+- Delete Resource Group
 
 ## VMWare Cloud Services 
 Login to your CAS Account and select VMware Cloud Assembly
@@ -120,14 +130,17 @@ Login to your CAS Account and select VMware Cloud Assembly
 #### Cloud Account
 - Click on Infrastructure and add select Cloud Accounts under Connections
 - Click on Add Cloud Account
-- Select Amazon Webservices
-- Enter AccessKey and AccessKey (this is available in the credentials file that was downloaded while provisioning a user)
+- Select Azure
+- Enter Subscription ID,Tenant ID,Client application ID, Client application secret key from the step abpve
 - Click on Validate
 - Enter a Name for the account, description and tag and click on ADD
+- Select the region Eg. Central US
+- Click on Add
 
 ### Projects
 - Click on Projects under Configure
 - New Project (Eg. Planes)
+- Alternatively Add to an Existing Project by clicking on the project , Provisioning and add a cloud zone
 
 ### Cloud Zones
 - New Cloud Zone
