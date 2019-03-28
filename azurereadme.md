@@ -142,7 +142,10 @@ Login to your CAS Account and select VMware Cloud Assembly
 - New Project (Eg. Planes)
 - Alternatively Add to an Existing Project by clicking on the project , Provisioning and add cloud zone that was automatically created by CAS for Azure
 
-### Flavor Zones
+### Cloud Zones
+- Select the cloud zone that was provisioned by CAS for Azure. Add azplanespubsubnet and azplanespvtsubnet to the capabilites tag of the cloud zone.
+
+### Flavor
 - By default there is a small , large and medium. You can add more flavor mappings , by adding a new flavor mapping and selecting your account and selecting the type of instance you require.
 - Click on the + , select the account and enter value eg Standard_B1s and click on save
 
@@ -170,12 +173,11 @@ NOTE: These tags are used to provision the compute intances to their respective 
 
 ### Azure VM Instances
 - Login to Azure Portal
-- Click on
-- Under the EC2 Dashboard click on Security Groups. CAS would have created the photon-model-sg security group.
-- Click on the API, DB and Cache instances and make sure their subnet is the private subnet of your vpc
-- make sure that the frontend instance is on the public subnet of your vpc
-- Get private IP of all instances
-- select each instance and copy the private IP to your clipboard
+- Click on All resources
+- Select Filters
+- Select the resourcegroup Eg. CASResourceGroup
+- Select the resources Type as Virtual Machines
+- You should see 5 virtual machines provisioned , Bastion, frontend, api, cache and DBTier
 
 ### Connect to the instances:
 
@@ -183,27 +185,19 @@ NOTE: These tags are used to provision the compute intances to their respective 
 https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/putty.html
 
 ### Front end Instance
-- In a terminal window navigate to the folder where the planeskeypair.pem was downloaded
-- Go to your EC2 dashboard and select the frontend instance and click on connect 
-- Follow the instructions in the popup (chmod 400 planeskeypair.pem)
-- copy the string under Example (ssh -i "planeskeypair.pem" ubuntu@<ip>)
-- Paste the string in your terminal and click on enter
+- Select the frontend vm and copy the public ip
+- SSH into the frontend vm eg ssh ubuntu@publicip (password in the blueprint is Vmware123456)
 - cd /planespotterCloud/planespotter-master/frontend/app/
 - edit frontend.ini
 - Point the PLANESPOTTER_API_ENDPOINT endpoint to your API instance private ip (10.192.20.x)
 - Restart the frontend service (sudo systemctl restart frontend)
 
 ### API Instance
--RDP into the bastion Host 
-- Go to the EC2 dashboard . Log into AWS , serach for EC2 under services
-- Select the BastionHost and copy its public IP to clip board
-- Click on Connect and follow the instructions to get password.
-- Select the planeskeypair.pem file as key file
-- Download the RDP file
-- RDP to the Bastion host using the username and password 
-- Transfer the Pem file to the bastion host
-- Follow the instructions on https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/putty.html to connect to the api instance (NOTE: Connect to the API instance using the private IP 10.192.20.x)
-- use ubuntu@10.192.20.x for hostname or ip
+- SSH into the bastion Host 
+- Select the bastion vm and copy the public ip in the azure portal
+- SSH into the bastion vm eg ssh ubuntu@<bastionpubklicip> (password in the blueprint is Vmware123456)
+- Select the api vm and copy the private ip from the azure portal
+- From the bastion vm SSH into the private vm eg ssh ubuntu@<apiprivateip> (password in the blueprint is Vmware123456)
 - On the putty terminal cd /planespotterCloud/planespotter-master/app-server/app/config/
 - edit the config.cfg file and change the DATABASE_URL ip and REDIS_HOST ip to the private ip of the DB and Cache Instace's
 - Restart the app-server service (sudo systemctl restart app-server)
