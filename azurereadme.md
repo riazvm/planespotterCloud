@@ -1,7 +1,7 @@
 # planespotterCloud
 Cloned from https://github.com/yfauser/planespotter
 
-# Provision Instances and depoloy the planespotter App on AWS using VMWare Cloud Assembly
+# Provision Instances and depoloy the planespotter App on Azure using VMWare Cloud Assembly
 
 - Create VPC with a public and private Subnet on a single AZ.  Deploys an Internet Gateway, with a default route on the public subnet. Deploy a NAT Gateways and default routes for it in the private subnets.
 
@@ -140,43 +140,37 @@ Login to your CAS Account and select VMware Cloud Assembly
 ### Projects
 - Click on Projects under Configure
 - New Project (Eg. Planes)
-- Alternatively Add to an Existing Project by clicking on the project , Provisioning and add a cloud zone
+- Alternatively Add to an Existing Project by clicking on the project , Provisioning and add cloud zone that was automatically created by CAS for Azure
 
-### Cloud Zones
-- New Cloud Zone
-- Select account that was created in the previous step
-- Enter a Name (PlanesCloudZone0, Description
-- For Capabilitytags enter values Eg(planespublicsubnet, planesprivatesubnet). We will be using these tags to differentiate between the public and private subnets in our vpc. Click on create
-- For to Projects , open Panes, go to provisioning and add the PlanesCloudZone to the project and save
-		
 ### Flavor Zones
 - By default there is a small , large and medium. You can add more flavor mappings , by adding a new flavor mapping and selecting your account and selecting the type of instance you require.
+- Click on the + , select the account and enter value eg Standard_B1s and click on save
 
 ### Image Mapping
-- Add new Image mapping , enter a image name, select account , for the image enter the ami id , select the ami and save (Eg. AmazonLinuxAMI (ami-0080e4c5bc078760e), AWS Ubuntu (ami-0f9cf087c1f27d9b1))
+- Add new Image mapping , enter a image name, select account and Select the Image Eg Canonical:UbuntuServer:18.04-LTS:latest and click on create. You can also add to an existing image.
 
 ### Network Profile
 - Add New Network Proifile
-- Select Account, enter name (Eg. PlanesNetworkProfile)
-- In networks select the Dev Public Subnet(AZ) and the Dev Public Subnet(AZ), these were created in your VPC when it was provisioned
-- Select the Dev Public Subnet and click on tags and enter planespublicsubnet and save
-- Select the Dev Private Subnet and click on tags and enter planesprivatesubnet and save
+- Select Account, enter name (Eg. AzurePlanesNetworkProfile)
+- In networks click on add and select the PublicSubnet and the PrivateSubnet, these were created in your VPC when it was provisioned , and click on Add
+- Select the PublicSubnet and click on tags and enter azplanespubsubnet and save
+- Select the Dev PrivateSubnet and click on tags and enter azplanespvtsubnet and save
 NOTE: These tags are used to provision the compute intances to their respective Subnets
 - Click on create
 
 ### BluePrints
 - Go to blueprints and create a new blue print
 - Enter Name(Eg PlanesVPCBluePrint) and select the project as planes
-- Copy the contents of the planespotterCloud/planespotter-master/vmwarecas/blueprints/PlanesVPCBluePrint.yaml to the new blueprint
+- Copy the contents of the planespotterCloud/planespotter-master/vmwarecas/blueprints/azure/PlanesVPCBluePrintAzure.yaml to the new blueprint
 - Go through the contents on the yaml (note the tags used for the private and public subnets)
 - Deploy the blueprint
 
 
 ## Verification and Configuration Changes
 
-### EC2 Instances
-- Go to the EC2 dashboard . Log into AWS , serach for EC2 under services
-- You should see four new EC2 instances running in your dashboard
+### Azure VM Instances
+- Login to Azure Portal
+- Click on
 - Under the EC2 Dashboard click on Security Groups. CAS would have created the photon-model-sg security group.
 - Click on the API, DB and Cache instances and make sure their subnet is the private subnet of your vpc
 - make sure that the frontend instance is on the public subnet of your vpc
