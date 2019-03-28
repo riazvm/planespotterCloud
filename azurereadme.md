@@ -5,47 +5,80 @@ Cloned from https://github.com/yfauser/planespotter
 
 - Create VPC with a public and private Subnet on a single AZ.  Deploys an Internet Gateway, with a default route on the public subnet. Deploy a NAT Gateways and default routes for it in the private subnets.
 
+- Create an applciation within Azure to connect from CAS
+
 - Create and provision a front end server in the public subnet , an api server, a cache server and a mysql db server in the private subnet.
 
-- Manually create a windows bastion host on the public subnet to connect and validate the instances on the private subnet
+- CAS creates a bastion host on the public subnet to connect and validate the instances on the private subnet
 
 - Change IP addresses on the configuration file on the API  Server to point to the dbserver and cache server .
 
-- Chnage the IP address on the ini file on the frontend server to point to the API server.
+- Change the IP address on the ini file on the frontend server to point to the API server.
 
 ##  Application Architecture
-![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/AWSVpcPlanespotter.png)
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/AzureVPNPlanespotter.png)
 
-##  Create VPC
+##  Create VPN (Virtual Private Network)
 
-### Install the AWS CLI
-- https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
+### Install the Azure CLI
+- https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
 
-Login to the AWS Console and Provision a user with Programatic access 
-- Click on services and Search for IAM
-- Click on IAM to land on the IAM screen
-- From the left menu select Users and click on Add User
-- Enter the username of your choice (Eg. cloudautomationuser)
-- Select programmatic access for access type
-- Click on Nex:Permissions
-- Click on Create Group
-- Enter Group Name (Eg. CloudAutomation)
-- Select AdministratorAccess for the policytype and Click on Create Group
-- Click on Next:Tags
-- Enter a tag of your choice (Eg. Key: Name  Value: CloudAutomationServices)
-- Click Next: Review
-- Click on Create User
-- Download the Credentials CSV file
+### Configure Azure CLI
+- open a terminal window and enter az login (Browser should open up with prompt)
+- Login with your azure account on the browser
 
-### Configure AWS CLI
-- open a terminal window and enter aws configure
-- You will be prompted for the access key , access secret and region, The access key and access secret will be found in the credentials file, Region use default region of your aws account, and output format as json
+### Provision the VPN (Virtual Private Network)
+#### Through Portal
+- https://docs.microsoft.com/en-us/azure/virtual-network/
+- https://www.youtube.com/watch?v=ADdGZEfmNzQ
 
-### Provision the VPC
-- clone or download the git repo 
-- Enter the following command aws cloudformation create-stack --stack-name mycasoneazstack --template-body file:////<git repo>/planespotterCloud/planespotter-master/aws/vpc/SingleAZVPC.yaml
-- The VPC should be provisioned in your AWS account
-- Login to AWS . Search for CloudFormation under services and check if the stack creation is complete
+#### Through CLI
+
+##### Create a resource group
+- az group create -l centralus -n CASResourceGroup
+
+##### Create a Virtual Network and a Public Subnet
+- Create a virtual network with a specific address prefix and a Public subnet.
+
+- az network vnet create -g CASResourceGroup -n CASVirtualNetwork --address-prefix 10.0.0.0/23 --subnet-name PublicSubnet --subnet-prefix 10.0.0.0/24
+
+##### Create a Private Subnet
+
+- az network vnet subnet create --address-prefixes 10.0.1.0/25 --name PrivateSubnet --resource-group CASResourceGroup --vnet-name CASVirtualNetwork
+
+##### Add a Gateway Subnet
+###### NOTE: NOT NECESSARY  - Used to connect a Virtual Private Network in AZURE to your corporate network 
+
+- az network vnet subnet create --vnet-name CASVirtualNetwork -n GatewaySubnet -g CASResourceGroup --address-prefix 10.0.1.128/28 
+
+##### Create a Network Security group
+###### NOTE: NSG are firewalls that have both inbound and outbound rules that are processed from lowest to highest. 
+
+###### NSG For the Public Subnet
+- az network nsg create -g CASResourceGroup -n CASPublicNSG  -l centralus
+
+###### Add rule to allow all HTTP , HTTPS  and SSH traffic into the public subnet
+
+
+- az network nsg rule create -g CASResourceGroup --nsg-name CASPublicNSG -n PublicNSGRule --priority 100 \
+                            --destination-address-prefixes '*' --destination-port-ranges 80 --access Allow \
+                            --protocol Any --description "Allow"
+
+- az network nsg rule create -g CASResourceGroup --nsg-name CASPublicNSG -n PublicNSGRule --priority 120 \
+                            --destination-address-prefixes '*' --destination-port-ranges 443 --access Allow \
+                            --protocol Any --description "Allow"
+
+- az network nsg rule create -g CASResourceGroup --nsg-name CASPublicNSG -n PublicNSGRule --priority 130 \
+                            --destination-address-prefixes '*' --destination-port-ranges 22 --access Allow \
+                            --protocol Any --description "Allow"
+
+###### NSG for Private Subnet
+- az network nsg create -g CASResourceGroup -n CASPrivateNSG -l centralus
+
+##### Associate the NSG to the subnets
+- az network vnet subnet update -g CASResourceGroup -n PublicSubnet --vnet-name CASVirtualNetwork --network-security-group CASPublicNSG
+- az network vnet subnet update -g CASResourceGroup -n PrivateSubnet --vnet-name CASVirtualNetwork --network-security-group CASPrivateNSG
+
 
 
 ### Create a Key Pair
