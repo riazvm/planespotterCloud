@@ -112,7 +112,7 @@ Login to your CAS Account and select VMware Cloud Assembly
 ### Network Profile
 - Add New Network Proifile
 - Select Account, enter name (Eg. PlanesNetworkProfile)
-- In networks select the Dev Public Subnet(AZ) and the Dev Public Subnet(AZ), these were created in your VPC when it was provisioned
+- In networks select the Dev Public Subnet(AZ) and the Dev Private Subnet(AZ), these were created in your VPC when it was provisioned
 - Select the Dev Public Subnet and click on tags and enter planespublicsubnet and save
 - Select the Dev Private Subnet and click on tags and enter planesprivatesubnet and save
 NOTE: These tags are used to provision the compute intances to their respective Subnets
