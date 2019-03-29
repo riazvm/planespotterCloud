@@ -176,7 +176,7 @@ NOTE: These tags are used to provision the compute intances to their respective 
 ### Connect to the instances:
 
 ### Windows users:
-https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/putty.html
+Use Putty to ssh into host machines
 
 ### Front end Instance
 - Select the frontend vm and copy the public ip
