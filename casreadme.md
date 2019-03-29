@@ -1,5 +1,4 @@
-# planespotterCloud
-Cloned from https://github.com/yfauser/planespotter
+# CAS Overview
 
 # What is VMWare Cloud Assembly
 
