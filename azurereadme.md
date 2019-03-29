@@ -60,11 +60,11 @@ Cloned from https://github.com/yfauser/planespotter
 ###### Add rule to allow all HTTP , HTTPS  and SSH traffic into the public subnet
 
 
-- az network nsg rule create -g CASResourceGroup --nsg-name CASPublicNSG -n PublicNSGRule --priority 100 --destination-address-prefixes '*' --destination-port-ranges 80 --access Allow --protocol TCP --description "Allow"
+- az network nsg rule create -g CASResourceGroup --nsg-name CASPublicNSG -n PublicNSGRuleHTTP --priority 100 --destination-address-prefixes '*' --destination-port-ranges 80 --access Allow --protocol TCP --description "Allow"
 
-- az network nsg rule create -g CASResourceGroup --nsg-name CASPublicNSG -n PublicNSGRule --priority 120 --destination-address-prefixes '*' --destination-port-ranges 443 --access Allow --protocol TCP  --description "Allow"
+- az network nsg rule create -g CASResourceGroup --nsg-name CASPublicNSG -n PublicNSGRuleHTTPS --priority 120 --destination-address-prefixes '*' --destination-port-ranges 443 --access Allow --protocol TCP  --description "Allow"
 
-- az network nsg rule create -g CASResourceGroup --nsg-name CASPublicNSG -n PublicNSGRule --priority 130  --destination-address-prefixes '*' --destination-port-ranges 22 --access Allow  --protocol TCP --description "Allow"
+- az network nsg rule create -g CASResourceGroup --nsg-name CASPublicNSG -n PublicNSGRuleSSH --priority 130  --destination-address-prefixes '*' --destination-port-ranges 22 --access Allow  --protocol TCP --description "Allow"
 
 ###### NSG for Private Subnet
 - az network nsg create -g CASResourceGroup -n CASPrivateNSG -l centralus
