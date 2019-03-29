@@ -3,6 +3,10 @@ inputs: {}
 resources:
   FrontEnd:
     type: Cloud.AWS.EC2.Instance
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
     properties:
       # Front end compute
       name: frontend
@@ -54,6 +58,10 @@ resources:
   APITier:
     # API Server  compute
     type: Cloud.AWS.EC2.Instance
+    metadata:
+      layoutPosition:
+        - 0
+        - 1
     properties:
       name: api
       image: AWSUbuntu
@@ -102,6 +110,10 @@ resources:
          - ufw allow 'Nginx Full'
   CacheTier:
     type: Cloud.AWS.EC2.Instance
+    metadata:
+      layoutPosition:
+        - 0
+        - 2
     properties:
       # Cache  compute
       name: cache
@@ -146,6 +158,10 @@ resources:
          - sudo systemctl start redis
   Cloud_Network_1:
     type: Cloud.Network
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
     properties:
       name: PlanesNetworkProfile-Publuc
       networkType: existing
@@ -154,6 +170,10 @@ resources:
   DatabaseTier:
     # DB Server compute
     type: Cloud.AWS.EC2.Instance
+    metadata:
+      layoutPosition:
+        - 0
+        - 3
     properties:
       name: DBTier
       image: AmazonLinuxAMI
@@ -193,6 +213,10 @@ resources:
          - mysql --user=root --password=$MYSQL_ROOT_PASSWORD < create-planespotter-db.sql
   Cloud_Network_2:
     type: Cloud.Network
+    metadata:
+      layoutPosition:
+        - 2
+        - 0
     properties:
       name: PlanesNetworkProfile-Private
       networkType: existing
