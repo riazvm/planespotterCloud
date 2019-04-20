@@ -4,7 +4,7 @@
 
 Planespotter is composed of a MySQL DB that holds Aircraft registration data from the FAA. You can search through the data in the DB through an API App Server written in Python using Flask. The API App Server is also retrieving data from a Redis in memory cache that contains data from aircrafts that are currently airborne. There's a service written in Python that retrieves the Data about airborne aircrafts and pushes that data into Redis. Finally there is a Frontend written with Python Flask and using Bootstrap.
 
-
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/planespotter.png)
 
 ## CAS Planespotter Deployment Topology
 
