@@ -1,0 +1,237 @@
+formatVersion: 1
+inputs:
+  env:
+    type: string
+    enum:
+      - 'env:multicloudaws'
+      - 'env:multicloudazure'
+    default: 'env:multicloudaws'
+    title: Environment
+    description: Target Environment
+  azureResourceGroup:
+    type: string
+  size:
+    type: string
+    enum:
+      - small
+      - medium
+    description: Size of Nodes
+    title: App Tier Size
+resources:
+  BastionHost:
+    type: Cloud.Machine
+    properties:
+      name: Bastion
+      image: ubuntu
+      flavor: '${input.size}'
+      resourceGroupName: '${input.azureResourceGroup}'
+      remoteAccess:
+        authentication: publicPrivateKey
+        username: ubuntu
+        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+      constraints: null
+      networks:
+        - name: '${resource.Cloud_Network_1.name}'
+          network: '${resource.Cloud_Network_1.id}'
+  FrontEnd:
+    type: Cloud.Machine
+    properties:
+      # Front end compute
+      name: frontend
+      image: ubuntu
+      flavor: '${input.size}'
+      resourceGroupName: '${input.azureResourceGroup}'
+      remoteAccess:
+        authentication: publicPrivateKey
+        username: ubuntu
+        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+      constraints:
+        - tag: '${input.env}'
+      networks:
+        - name: '${resource.Cloud_Network_1.name}'
+          network: '${resource.Cloud_Network_1.id}'
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+         
+        packages:
+         - nginx
+         - git
+         
+        runcmd:
+         - sudo apt-get update
+         - sudo apt-get install python-pip python-dev nginx git --assume-yes
+         - sudo pip install --upgrade pip
+         - sudo pip install virtualenv
+         - sudo git clone https://github.com/riazvm/planespotterCloud.git
+         - cd /planespotterCloud/planespotter-master/
+         - sudo chmod 777 *
+         - sudo cp /planespotterCloud/planespotter-master/system/frontend/frontend.service /etc/systemd/system/frontend.service
+         - sudo chmod 777 /etc/systemd/system/frontend.service
+         - sudo cp /planespotterCloud/planespotter-master/system/frontend/default /etc/nginx/sites-enabled/default
+         - sudo virtualenv frontend
+         - cd frontend/
+         - sudo chmod 777 *
+         - source bin/activate
+         - cd app
+         - sudo chmod 777 *
+         - sudo pip install -r requirements.txt
+         - sudo pip install uwsgi
+         - sudo -H bash
+         - mkdir -p /var/log/uwsgi
+         - chown -R ubuntu:ubuntu /var/log/uwsgi
+         - sudo systemctl start frontend
+         - sudo systemctl enable frontend
+         - sudo systemctl restart nginx
+         - ufw allow 'Nginx Full'
+  APITier:
+    # API Server  compute
+    type: Cloud.Machine
+    properties:
+      name: api
+      image: ubuntu
+      flavor: '${input.size}'
+      resourceGroupName: '${input.azureResourceGroup}'
+      remoteAccess:
+        authentication: publicPrivateKey
+        username: ubuntu
+        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+      constraints:
+        - tag: '${input.env}'
+      networks:
+        - name: '${resource.Cloud_Network_2.name}'
+          network: '${resource.Cloud_Network_2.id}'
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+
+        packages:
+         - nginx
+         - git
+
+        runcmd:
+         - sudo apt-get update
+         - sudo apt-get install python-pip python-dev nginx git --assume-yes
+         - sudo pip install --upgrade pip
+         - sudo pip install virtualenv
+         - sudo git clone https://github.com/riazvm/planespotterCloud.git
+         - cd /planespotterCloud/planespotter-master/
+         - sudo chmod 777 *
+         - sudo cp /planespotterCloud/planespotter-master/system/api/app-server.service /etc/systemd/system/app-server.service
+         - sudo chmod 777 /etc/systemd/system/app-server.service
+         - sudo cp /planespotterCloud/planespotter-master/system/api/default /etc/nginx/sites-enabled/default
+         - sudo virtualenv app-server
+         - cd app-server/
+         - sudo chmod 777 *
+         - source bin/activate
+         - cd app
+         - sudo chmod 777 *
+         - sudo pip install uwsgi Flask-Restless PyMySQL Flask-SQLAlchemy requests redis
+         - sudo -H bash
+         - mkdir -p /var/log/uwsgi
+         - chown -R ubuntu:ubuntu /var/log/uwsgi
+         - sudo systemctl start app-server
+         - sudo systemctl enable app-server
+         - sudo systemctl restart nginx
+         - ufw allow 'Nginx Full'
+  CacheTier:
+    type: Cloud.Machine
+    properties:
+      # Cache  compute
+      name: cache
+      image: ubuntu
+      flavor: '${input.size}'
+      resourceGroupName: '${input.azureResourceGroup}'
+      remoteAccess:
+        authentication: publicPrivateKey
+        username: ubuntu
+        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+      constraints:
+        - tag: '${input.env}'
+      networks:
+        - name: '${resource.Cloud_Network_2.name}'
+          network: '${resource.Cloud_Network_2.id}'
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+         
+        packages:
+         - git
+         
+        runcmd:
+         - sudo apt-get update
+         - sudo apt-get install git build-essential tcl --assume-yes
+         - sudo git clone https://github.com/riazvm/planespotterCloud.git
+         - cd /tmp
+         - sudo curl -O http://download.redis.io/redis-stable.tar.gz
+         - sudo tar xzvf redis-stable.tar.gz
+         - cd redis-stable
+         - sudo make
+         - sudo make test
+         - sudo make install
+         - sudo mkdir /etc/redis
+         - sudo cp /planespotterCloud/planespotter-master/system/cache/redis.conf /etc/redis
+         - sudo cp /planespotterCloud/planespotter-master/system/cache/redis.service /etc/systemd/system/redis.service
+         - sudo chmod 777 /etc/systemd/system/redis.service
+         - sudo -H bash
+         - sudo adduser --system --group --no-create-home redis
+         - mkdir /var/lib/redis
+         - chown redis:redis /var/lib/redis
+         - chmod 770 /var/lib/redis
+         - sudo systemctl start redis
+  Cloud_Network_1:
+    type: Cloud.Network
+    properties:
+      name: PlanesNetworkProfile-Public
+      networkType: existing
+      constraints:
+        - tag: publicsubnet
+  DatabaseTier:
+    # DB Server compute
+    type: Cloud.Machine
+    properties:
+      name: DBTier
+      image: ubuntu
+      flavor: '${input.size}'
+      resourceGroupName: '${input.azureResourceGroup}'
+      remoteAccess:
+        authentication: publicPrivateKey
+        username: ubuntu
+        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+      constraints:
+        - tag: '${input.env}'
+      networks:
+        - name: '${resource.Cloud_Network_2.name}'
+          network: '${resource.Cloud_Network_2.id}'
+      cloudConfig: |
+        #cloud-config
+        # log all cloud-init process output (info & errors) to a logfile
+        output: {all: ">> /var/log/cloud-init-output.log"}
+        runcmd:
+         - sudo apt-get update
+         - sudo apt-get install git unzip --assume-yes
+         - sudo git clone https://github.com/riazvm/planespotterCloud.git
+         - RUN ["/bin/bash", "-c", "debconf-set-selections <<< 'mysql-server mysql-server/root_password password vmware123')"]
+         - RUN ["/bin/bash", "-c", " debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password vmware123')"]
+         - sudo apt-get -y install mysql-server
+         - sudo cp /planespotterCloud/planespotter-master/system/mysql/mysqld.cnf /etc/mysql/mysql.conf.d/mysqld.cnf
+         - sudo systemctl restart mysql.service
+         - cd /planespotterCloud/planespotter-master/
+         - sudo chmod 777 *
+         - cd /planespotterCloud/planespotter-master/db-install/
+         - sudo chmod 777 *
+         - sudo chmod +x *
+         - export MYSQL_ROOT_PASSWORD=vmware123
+         - sudo wget http://registry.faa.gov/database/ReleasableAircraft.zip
+         - sudo unzip ReleasableAircraft.zip
+         - sudo mysql --user=root --password=$MYSQL_ROOT_PASSWORD < create-planespotter-db.sql
+  Cloud_Network_2:
+    type: Cloud.Network
+    properties:
+      name: PlanesNetworkProfile-Private
+      networkType: existing
+      constraints:
+        - tag: privatesubnet
