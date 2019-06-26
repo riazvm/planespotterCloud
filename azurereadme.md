@@ -101,6 +101,8 @@
 - Select Subscription that you are using
 
 ##### Assign Role to App 
+- In the Azure portal, click All services and then select the scope. For example, you can select Management groups,         Subscriptions, Resource groups, or a resource.
+- Click the specific resource.
 - Click on AccessControl(IAM)
 - Click on Add a Role Assignment
 - Select Role as Contributor

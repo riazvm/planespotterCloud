@@ -1,48 +1,46 @@
-# CAS Overview
+# CAS Planespotter Deployment Architecture
 
-# What is VMWare Cloud Assembly
+## Planespotter App
 
-- VMware Cloud Assembly is used to connect public and private cloud providers to deploy machines, applications, and services that you create to those resources. You and your teams develop blueprints-as-code in an environment that supports an iterative workflow, from development to testing to production. At provisioning time, you can deploy across a range of cloud vendors. The service is a managed VMware SaaS and NaaS-based framework.
+Planespotter is composed of a MySQL DB that holds Aircraft registration data from the FAA. You can search through the data in the DB through an API App Server written in Python using Flask. The API App Server is also retrieving data from a Redis in memory cache that contains data from aircrafts that are currently airborne. There's a service written in Python that retrieves the Data about airborne aircrafts and pushes that data into Redis. Finally there is a Frontend written with Python Flask and using Bootstrap.
 
-### VMware Cloud Assembly includes the following basic functions.
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/planespotter.png)
 
-- Add and organize your cloud vendor resources and users. Information about deployed blueprints.
+## CAS Planespotter Deployment Topology
 
-- A Marketplace provides VMware Solution Exchange blueprints and images
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/topology.png)
 
-- Create Blueprints which is your development home. You use the canvas and the YAML editor to develop and then deploy your machines and applications.
+- The application topology shows the different systems and networks that consitute the planespotter application
 
-- Deploy Blueprints to your cloud providers, get current status of your provisioned resources. Access details and history that you use to manage your deployments.
+- The planespotter application is deployed as a multitier application with a clear segregation of each app tier
 
-![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/VMWareCAS.png)
+  - FrontEnd - written with Python Flask and using Bootstrap.
+  - APITier - API App Server written in Python using Flask. Exposes an API to retrieve data from MySQL. The API App Server is also retrieving data from a Redis in memory cache that contains data from aircrafts that are currently airborne. There's a service written in Python that retrieves the Data about airborne aircrafts and pushes that data into Redis
+  - DBTier - holds Aircraft registration data from the FA
+  - CacheTier - Redis Cache server
+  - Bastion - Used as a jumpbox
+  - Cloud_Network_1 - Public Subnet
+  - Cloud_Network_2 - Private Subnet
 
-### How does VMWare Cloud Assembly work
+## CAS Deployment workflow
 
-#### As a cloud administrator 
- - You set up the provisioning infrastructure and create the projects that group users and resources.
-
- - Add your cloud vendor accounts. 
-
- - Determine which regions or datastores are the cloud zones that you want your developers deploying to. 
-
- - Create policies that define the cloud zones. 
-
- - Create projects that group the developers with the cloud zones. 
-
-#### As a blueprint developer
-- You are a member of one or more projects.
-
-- You create and deploy blueprints to the cloud zones associated with one of your projects.
-
-- Develop blueprints for projects using the canvas. 
-
-- Deploy your blueprints to project cloud zones based on policies and constraints.
-
-- Manage your deployments, including deleting unused applications. 
-
-![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/CASHowItWorks.png)
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/casworkflow.png)
 
 
+## CAS Deployment Request
 
+### Network Allocation
 
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/networkalloc.png)
 
+### Network Provisioning
+
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/networkprov.png)
+
+### Machine Allocation
+
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/machinealloc.png)
+
+### Machine Provisioning
+
+![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/machineprov.png)

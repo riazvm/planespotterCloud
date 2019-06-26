@@ -1,4 +1,4 @@
-# planespotterCloud
+# Use VMWare CAS to Achieve Multi-Cloud Deployments in Minutes
 Cloned from https://github.com/yfauser/planespotter
 
 [CAS Overview](https://github.com/riazvm/planespotterCloud/blob/master/casreadme.md "CAS Overview")
