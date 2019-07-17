@@ -1,55 +1,83 @@
 formatVersion: 1
+name: bp-planespotter-cloudagnostic
+version: 1.2
 inputs:
-  env:
+  application:
     type: string
+    default: tito
+    readOnly: true
+  environment:
+    type: string
+    description: App Environment
+    default: production
     enum:
-      - 'env:multicloudaws'
-      - 'env:multicloudazure'
-    default: 'env:multicloudaws'
-    title: Environment
-    description: Target Environment
-  azureResourceGroup:
+      - dev
+      - test
+      - production
+  cloud_target:
     type: string
-  size:
-    type: string
+    description: Select target cloud
     enum:
-      - small
-      - medium
-    description: Size of Nodes
-    title: App Tier Size
+      - 'target:aws'
+      - 'target:azure'
+      - 'target:gcp'
+      - 'target:vsphere'
+  SSHkey:
+    type: string
+    description: VM SSH Key
+    default: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
 resources:
   BastionHost:
     type: Cloud.Machine
     properties:
       name: Bastion
-      image: ubuntu
-      flavor: '${input.size}'
-      resourceGroupName: '${input.azureResourceGroup}'
+      tags:
+        - key: application
+          value: '${input.application}'
+        - key: environment
+          value: '${input.environment}'
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
+      image: im-ubuntu16046
+      flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
-        username: ubuntu
-        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
-      constraints: null
+        sshKey: '${input.SSHkey}'
+      constraints:
+        - tag: '${input.cloud_target}'
+      cloudConfigSettings:
+        phoneHomeFailOnTimeout: true
+        phoneHomeShouldWait: true
+        phoneHomeTimeouSeconds: 600
       networks:
-        - name: '${resource.Cloud_Network_1.name}'
-          network: '${resource.Cloud_Network_1.id}'
+        - name: '${resource.Public_Cloud_Network.name}'
+          network: '${resource.Public_Cloud_Network.id}'
+          assignPublicIpAddress: true
   FrontEnd:
     type: Cloud.Machine
     properties:
       # Front end compute
       name: frontend
-      image: ubuntu
-      flavor: '${input.size}'
-      resourceGroupName: '${input.azureResourceGroup}'
+      tags:
+        - key: application
+          value: '${input.application}'
+        - key: environment
+          value: '${input.environment}'
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
+      image: im-ubuntu16046
+      flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
-        username: ubuntu
-        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+        sshKey: '${input.SSHkey}'
       constraints:
-        - tag: '${input.env}'
+        - tag: '${input.cloud_target}'
+      cloudConfigSettings:
+        phoneHomeFailOnTimeout: true
+        phoneHomeShouldWait: true
+        phoneHomeTimeouSeconds: 600
       networks:
-        - name: '${resource.Cloud_Network_1.name}'
-          network: '${resource.Cloud_Network_1.id}'
+        - name: '${resource.Public_Cloud_Network.name}'
+          network: '${resource.Public_Cloud_Network.id}'
+          assignPublicIpAddress: true
       cloudConfig: |
         #cloud-config
         # log all cloud-init process output (info & errors) to a logfile
@@ -90,18 +118,26 @@ resources:
     type: Cloud.Machine
     properties:
       name: api
-      image: ubuntu
-      flavor: '${input.size}'
-      resourceGroupName: '${input.azureResourceGroup}'
+      tags:
+        - key: application
+          value: '${input.application}'
+        - key: environment
+          value: '${input.environment}'
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
+      image: im-ubuntu16046
+      flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
-        username: ubuntu
-        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+        sshKey: '${input.SSHkey}'
       constraints:
-        - tag: '${input.env}'
+        - tag: '${input.cloud_target}'
+      cloudConfigSettings:
+        phoneHomeFailOnTimeout: true
+        phoneHomeShouldWait: true
+        phoneHomeTimeouSeconds: 600
       networks:
-        - name: '${resource.Cloud_Network_2.name}'
-          network: '${resource.Cloud_Network_2.id}'
+        - name: '${Private_Cloud_Network.name}'
+          network: '${resource.Private_Cloud_Network.id}'
       cloudConfig: |
         #cloud-config
         # log all cloud-init process output (info & errors) to a logfile
@@ -140,19 +176,26 @@ resources:
     type: Cloud.Machine
     properties:
       # Cache  compute
-      name: cache
-      image: ubuntu
-      flavor: '${input.size}'
-      resourceGroupName: '${input.azureResourceGroup}'
+      tags:
+        - key: application
+          value: '${input.application}'
+        - key: environment
+          value: '${input.environment}'
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
+      image: im-ubuntu16046
+      flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
-        username: ubuntu
-        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+        sshKey: '${input.SSHkey}'
       constraints:
-        - tag: '${input.env}'
+        - tag: '${input.cloud_target}'
+      cloudConfigSettings:
+        phoneHomeFailOnTimeout: true
+        phoneHomeShouldWait: true
+        phoneHomeTimeouSeconds: 600
       networks:
-        - name: '${resource.Cloud_Network_2.name}'
-          network: '${resource.Cloud_Network_2.id}'
+        - name: '${Private_Cloud_Network.name}'
+          network: '${resource.Private_Cloud_Network.id}'
       cloudConfig: |
         #cloud-config
         # log all cloud-init process output (info & errors) to a logfile
@@ -182,30 +225,31 @@ resources:
          - chown redis:redis /var/lib/redis
          - chmod 770 /var/lib/redis
          - sudo systemctl start redis
-  Cloud_Network_1:
-    type: Cloud.Network
-    properties:
-      name: PlanesNetworkProfile-Public
-      networkType: existing
-      constraints:
-        - tag: publicsubnet
   DatabaseTier:
     # DB Server compute
     type: Cloud.Machine
     properties:
       name: DBTier
-      image: ubuntu
-      flavor: '${input.size}'
-      resourceGroupName: '${input.azureResourceGroup}'
+      tags:
+        - key: application
+          value: '${input.application}'
+        - key: environment
+          value: '${input.environment}'
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
+      image: im-ubuntu16046
+      flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
-        username: ubuntu
-        sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC2sbYtHu65GhgEYk8kUCzCFBWlKM24hMiZwcwJy0mws9KwsCTEEH+aOlt0BvMcYchhV5I2Bxi3nS05vSXMZycoSG8t6Cw0Cw2IYHYNYzl8XCQ5QUtFDXoEK1eGEQTeXissTkR15Fk2CzBYXoGNUKe7mt6TQGKMpwXwNDZe2ZlJXRGsiTgLCdLehYUS+qIIOirQqD2VjBPVfp1ckCztgIydiQoZOilMAQBnJ6KGMr4DiuF8zevgFl4OcFDm7eeuP9cOSYXRtCyAtrB5xvYNGcf+AiMz7yun/HLwMkXab8Nzup1I+90GVtouMddpSp3gZyPpC7CVeToCebhe+EGUjzR riazm@riazm-a01.vmware.com
+        sshKey: '${input.SSHkey}'
       constraints:
-        - tag: '${input.env}'
+        - tag: '${input.cloud_target}'
+      cloudConfigSettings:
+        phoneHomeFailOnTimeout: true
+        phoneHomeShouldWait: true
+        phoneHomeTimeouSeconds: 600
       networks:
-        - name: '${resource.Cloud_Network_2.name}'
-          network: '${resource.Cloud_Network_2.id}'
+        - name: '${Private_Cloud_Network.name}'
+          network: '${resource.Private_Cloud_Network.id}'
       cloudConfig: |
         #cloud-config
         # log all cloud-init process output (info & errors) to a logfile
@@ -228,10 +272,19 @@ resources:
          - sudo wget http://registry.faa.gov/database/ReleasableAircraft.zip
          - sudo unzip ReleasableAircraft.zip
          - sudo mysql --user=root --password=$MYSQL_ROOT_PASSWORD < create-planespotter-db.sql
-  Cloud_Network_2:
+  Public_Cloud_Network:
     type: Cloud.Network
     properties:
-      name: PlanesNetworkProfile-Private
+      name: PublicCloudNetwork
+      networkType: existing
+      constraints:
+        - tag: publicsubnet
+        - tag: '${input.environment}'
+  Private_Cloud_Network:
+    type: Cloud.Network
+    properties:
+      name: PrivateCloudNetwork
       networkType: existing
       constraints:
         - tag: privatesubnet
+        - tag: '${input.environment}'
