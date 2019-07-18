@@ -174,8 +174,8 @@ resources:
          - sudo -H bash
          - mkdir -p /var/log/uwsgi
          - chown -R ubuntu:ubuntu /var/log/uwsgi
-         - sudo printf '\nDATABASE_URL=${resource.DatabaseTier.networks[0].address}' >> /planespotterCloud/planespotter-master/app-server/app/config/config.cfg
-         - sudo printf '\nREDIS_HOST=${resource.CacheTier.networks[0].address}' >> /planespotterCloud/planespotter-master/app-server/app/config/config.cfg
+         - sudo printf "\nDATABASE_URL='${resource.DatabaseTier.networks[0].address}'" >> /planespotterCloud/planespotter-master/app-server/app/config/config.cfg
+         - sudo printf "\nREDIS_HOST='${resource.CacheTier.networks[0].address}'" >> /planespotterCloud/planespotter-master/app-server/app/config/config.cfg
          - sudo systemctl start app-server
          - sudo systemctl enable app-server
          - sudo systemctl restart nginx
