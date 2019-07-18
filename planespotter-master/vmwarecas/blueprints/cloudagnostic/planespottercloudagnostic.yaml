@@ -4,7 +4,7 @@ version: 1.2
 inputs:
   application:
     type: string
-    default: tito
+    default: planespotter
     readOnly: true
   environment:
     type: string
@@ -37,7 +37,7 @@ resources:
         - key: environment
           value: '${input.environment}'
       resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
-      image: im-ubuntu16046
+      image: im-ubuntu1804
       flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
@@ -54,6 +54,8 @@ resources:
           assignPublicIpAddress: true
   FrontEnd:
     type: Cloud.Machine
+    dependsOn:
+      - APITier
     properties:
       # Front end compute
       name: frontend
@@ -63,7 +65,7 @@ resources:
         - key: environment
           value: '${input.environment}'
       resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
-      image: im-ubuntu16046
+      image: im-ubuntu1804
       flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
@@ -89,7 +91,7 @@ resources:
          
         runcmd:
          - sudo apt-get update
-         - sudo apt-get install python-pip python-dev nginx git --assume-yes
+         - sudo DEBIAN_FRONTEND=noninteractive apt-get install python-pip python-dev nginx git --assume-yes
          - sudo pip install --upgrade pip
          - sudo pip install virtualenv
          - sudo git clone https://github.com/riazvm/planespotterCloud.git
@@ -109,6 +111,7 @@ resources:
          - sudo -H bash
          - mkdir -p /var/log/uwsgi
          - chown -R ubuntu:ubuntu /var/log/uwsgi
+         - sudo printf '\nenv = PLANESPOTTER_API_ENDPOINT=${resource.APITier.networks[0].address}' >> /planespotterCloud/planespotter-master/frontend/app/frontend.ini
          - sudo systemctl start frontend
          - sudo systemctl enable frontend
          - sudo systemctl restart nginx
@@ -116,6 +119,9 @@ resources:
   APITier:
     # API Server  compute
     type: Cloud.Machine
+    dependsOn:
+      - CacheTier
+      - DatabaseTier
     properties:
       name: api
       tags:
@@ -123,8 +129,8 @@ resources:
           value: '${input.application}'
         - key: environment
           value: '${input.environment}'
-      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
-      image: im-ubuntu16046
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "planes" : ""}'
+      image: im-ubuntu1804
       flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
@@ -149,7 +155,7 @@ resources:
 
         runcmd:
          - sudo apt-get update
-         - sudo apt-get install python-pip python-dev nginx git --assume-yes
+         - sudo DEBIAN_FRONTEND=noninteractive apt-get install python-pip python-dev nginx git --assume-yes
          - sudo pip install --upgrade pip
          - sudo pip install virtualenv
          - sudo git clone https://github.com/riazvm/planespotterCloud.git
@@ -168,6 +174,8 @@ resources:
          - sudo -H bash
          - mkdir -p /var/log/uwsgi
          - chown -R ubuntu:ubuntu /var/log/uwsgi
+         - sudo printf '\nDATABASE_URL=${resource.DatabaseTier.networks[0].address}' >> /planespotterCloud/planespotter-master/app-server/app/config/config.cfg
+         - sudo printf '\nREDIS_HOST=${resource.CacheTier.networks[0].address}' >> /planespotterCloud/planespotter-master/app-server/app/config/config.cfg
          - sudo systemctl start app-server
          - sudo systemctl enable app-server
          - sudo systemctl restart nginx
@@ -182,7 +190,7 @@ resources:
         - key: environment
           value: '${input.environment}'
       resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
-      image: im-ubuntu16046
+      image: im-ubuntu1804
       flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
@@ -235,8 +243,8 @@ resources:
           value: '${input.application}'
         - key: environment
           value: '${input.environment}'
-      resourceGroupName: '${input.cloud_target == "target:azure" ? "operationsaas" : ""}'
-      image: im-ubuntu16046
+      resourceGroupName: '${input.cloud_target == "target:azure" ? "planes" : ""}'
+      image: im-ubuntu1804
       flavor: fl-small
       remoteAccess:
         authentication: publicPrivateKey
