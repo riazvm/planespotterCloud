@@ -9,6 +9,8 @@
 
 - CAS creates a bastion host on the public subnet to connect and validate the instances on the private subnet
 
+- If you are using the cloudagnostic blueprint the below two steps are not required . 
+
 - Change IP addresses on the configuration file on the API  Server to point to the dbserver and cache server .
 
 - Change the IP address on the ini file on the frontend server to point to the API server.

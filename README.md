@@ -9,3 +9,4 @@ Cloned from https://github.com/yfauser/planespotter
 
 [Provision Instances and depoloy the planespotter App on Azure using VMWare Cloud Assembly](https://github.com/riazvm/planespotterCloud/blob/master/azurereadme.md "CAS and Azure")
 
+[Provision Instances and depoloy the planespotter App on GCP using VMWare Cloud Assembly](https://github.com/riazvm/planespotterCloud/blob/master/gcpreadme.md "CAS and GCP")

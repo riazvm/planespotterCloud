@@ -14,6 +14,8 @@
 
 - Deploy Blueprints to your cloud providers, get current status of your provisioned resources. Access details and history that you use to manage your deployments.
 
+- The cloud agnostic blueprint is completely automated. 
+
 ![](https://github.com/riazvm/planespotterCloud/blob/master/planespotter-master/docs/pics/VMWareCAS.png)
 
 ### How does VMWare Cloud Assembly work
